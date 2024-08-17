@@ -1,0 +1,19 @@
+{
+    "name": "Arbelos.CameraUtility.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:13718990bfe769e4d80f2dde326f1527",
+        "GUID:ba8c092d026123a418fb4bfb797a7bd8"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
