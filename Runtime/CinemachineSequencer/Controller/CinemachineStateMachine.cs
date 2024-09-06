@@ -1,6 +1,8 @@
+using System;
 using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Arbelos.CameraUtility.Runtime
@@ -20,7 +22,7 @@ namespace Arbelos.CameraUtility.Runtime
         {
             if(originalVirtualCamera && originalVirtualCamera.GetComponent<CinemachineVirtualCamera>())
             {
-                SetOriginalCamera(originalVirtualCamera.GetComponent<CinemachineVirtualCamera>());
+                StartCoroutine(SetOriginalCamera(originalVirtualCamera.GetComponent<CinemachineVirtualCamera>()));
             }
             AssignRefToChildStates();
         }
@@ -44,10 +46,18 @@ namespace Arbelos.CameraUtility.Runtime
             return null;
         }
 
-        public void SetOriginalCamera(CinemachineVirtualCamera virtualCamera)
+        public IEnumerator SetOriginalCamera(CinemachineVirtualCamera virtualCamera)
         {
             originalVirtualCamera = virtualCamera.gameObject;
             var cameras = FindObjectsOfType<CinemachineBrain>(true);
+        
+            //Wait until cameras are initialized property and a camera has a active virtual camera to search from.
+            while (!Array.Exists(cameras,
+                       x => x.ActiveVirtualCamera != null && x.ActiveVirtualCamera.VirtualCameraGameObject != null))
+            {
+                yield return null;
+            }
+            
             foreach (var camera in cameras)
             {
                 if (camera.ActiveVirtualCamera.VirtualCameraGameObject == originalVirtualCamera)
