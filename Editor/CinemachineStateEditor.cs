@@ -164,6 +164,7 @@ namespace Arbelos.CameraUtility.Editor
 
                 case (int)CinemachineStateType.DollyPath:
                     cameraSpeedField.visible = true;
+                    focusObjectField.visible = true;
                     Debug.Log($"Current State Type is Dolly Path!");
                     break;
 

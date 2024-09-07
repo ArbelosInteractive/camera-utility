@@ -127,6 +127,15 @@ namespace Arbelos.CameraUtility.Runtime
                 Debug.LogError("The path atleast need to have 2 waypoints to travel for DollyPath state!");
                 return;
             }
+            
+            if (focusObject != null)
+            {
+                targetCam.LookAt = focusObject;
+            }
+            else
+            {
+                targetCam.LookAt = null;
+            }
 
             StartCoroutine(TravelDollyPath());
         }
@@ -154,13 +163,24 @@ namespace Arbelos.CameraUtility.Runtime
                     elapsedTime += Time.deltaTime;
                     pathPosition = (elapsedTime / cycleDuration) * pathLength;
 
-                    // Get the position and rotation on the path
+                    // Get the position on the path
                     Vector3 worldPosition = path.EvaluatePositionAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance);
-                    Quaternion worldRotation = Quaternion.LookRotation(path.EvaluateTangentAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance));
-
-                    // Move the camera to the position and rotation
                     targetCam.gameObject.transform.position = worldPosition;
-                    targetCam.gameObject.transform.rotation = worldRotation;
+
+                    // Determine the camera's rotation based on whether the lookAt target is set
+                    if (targetCam.LookAt != null)
+                    {
+                        // Look at the lookAt target
+                        Vector3 directionToTarget = (targetCam.LookAt.position - targetCam.gameObject.transform.position).normalized;
+                        Quaternion lookAtRotation = Quaternion.LookRotation(directionToTarget);
+                        targetCam.gameObject.transform.rotation = lookAtRotation;
+                    }
+                    else
+                    {
+                        // Look in the direction of the path
+                        Quaternion worldRotation = Quaternion.LookRotation(path.EvaluateTangentAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance));
+                        targetCam.gameObject.transform.rotation = worldRotation;
+                    }
 
                     yield return null;
                 }
