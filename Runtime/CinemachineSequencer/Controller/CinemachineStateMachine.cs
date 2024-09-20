@@ -15,10 +15,8 @@ namespace Arbelos.CameraUtility.Runtime
         private Camera originalCamera;
         [SerializeField][Tooltip("Original target cinemachine virtual camera game object.")] private GameObject originalVirtualCamera;
         private CinemachineState activeState;
-
-
-        // Start is called before the first frame update
-        void Start()
+        
+        void Awake()
         {
             if(originalVirtualCamera && originalVirtualCamera.GetComponent<CinemachineVirtualCamera>())
             {

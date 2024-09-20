@@ -18,3 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.2] - 2024-09-06
 ### Updated
 - Updated DollyPath State such that if a focusObject is assigned, the camera will look at it the whole travel path, otherwise camera looks at the path direction.
+
+## [1.0.3] - 2024-09-20
+### Updated
+- Updated the cinemachine behavior camera setup to be called on awake.
