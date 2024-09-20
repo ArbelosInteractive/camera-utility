@@ -34,8 +34,7 @@ namespace Arbelos.CameraUtility.Runtime
         private bool stateActive;
         private float initialFOV;
 
-        // Start is called before the first frame update
-        void Start()
+        void Awake()
         {
             path = gameObject.GetComponent<CinemachineSmoothPath>();
         }

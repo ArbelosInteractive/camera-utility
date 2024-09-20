@@ -1,6 +1,6 @@
 {
     "name": "com.arbelos.camerautility",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "displayName": "Camera Utility",
     "description": "A package of scripts for cinemachine camera state management and sequencing.",
     "unity": "2021.3",

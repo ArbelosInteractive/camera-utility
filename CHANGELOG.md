@@ -22,3 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.3] - 2024-09-20
 ### Updated
 - Updated the cinemachine behavior camera setup to be called on awake.
+
+## [1.0.4] - 2024-09-20
+### Updated
+- Updated the cinemachine state setup to be called on awake.
