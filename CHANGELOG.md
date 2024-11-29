@@ -26,3 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.4] - 2024-09-20
 ### Updated
 - Updated the cinemachine state setup to be called on awake.
+
+## [1.0.5] - 2024-11-29
+### Updated
+- On Begin State, wait for original camera to be setup.

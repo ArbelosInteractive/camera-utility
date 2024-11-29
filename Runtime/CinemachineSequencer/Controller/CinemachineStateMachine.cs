@@ -76,6 +76,17 @@ namespace Arbelos.CameraUtility.Runtime
 
         public void BeginState(string _stateName)
         {
+            StartCoroutine(ActivateState(_stateName));
+        }
+
+        public IEnumerator ActivateState(string _stateName)
+        {
+            //Wait for original camera to be setup
+            while (originalCamera == null)
+            {
+                yield return null;
+            }
+            
             var stateToBegin = states.Find(x => x.GetName() == _stateName);
             if(stateToBegin)
             {
