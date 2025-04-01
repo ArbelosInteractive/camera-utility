@@ -30,3 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.5] - 2024-11-29
 ### Updated
 - On Begin State, wait for original camera to be setup.
+
+## [1.0.6] - 2025-04-01
+### Updated
+- Get States method to fetch states under a statemachine.
+- Made state enter and exit events public.
+- Added a new statemachine type called "FollowZoom" which follows the first waypoint of the path on a moving transform while looking at the target.

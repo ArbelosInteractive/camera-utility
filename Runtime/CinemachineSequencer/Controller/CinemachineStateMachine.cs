@@ -109,6 +109,8 @@ namespace Arbelos.CameraUtility.Runtime
                     }
                     stateToBegin.BeginState();
                 }
+                
+                Debug.Log($"[Cinemachine State Machine] Beginning State: {_stateName}");
             }
             else
             {
@@ -183,6 +185,11 @@ namespace Arbelos.CameraUtility.Runtime
         public void DebugExitFunction()
         {
             Debug.Log("Exit event function called");
+        }
+
+        public CinemachineState GetState(string stateName)
+        {
+            return states.Find(x => x.GetName() == stateName);
         }
     }
 }

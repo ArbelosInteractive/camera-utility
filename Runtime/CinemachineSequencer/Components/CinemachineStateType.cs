@@ -8,7 +8,8 @@ namespace Arbelos.CameraUtility.Runtime
     {
         Original,
         DollyPath,
-        ClashZoom,
+        StaticZoom,
+        FollowZoom,
         Shake,
         AutoPan
     }
@@ -20,4 +21,3 @@ namespace Arbelos.CameraUtility.Runtime
         West
     }
 }
-

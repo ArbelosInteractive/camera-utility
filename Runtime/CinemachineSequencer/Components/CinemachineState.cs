@@ -15,8 +15,8 @@ namespace Arbelos.CameraUtility.Runtime
         [SerializeField] private float cameraSpeed;
         [SerializeField] private float duration;
         [SerializeField] private Transform focusObject;
-        [SerializeField] private UnityEvent stateEnterEvent;
-        [SerializeField] private UnityEvent stateExitEvent;
+        public UnityEvent stateEnterEvent;
+        public UnityEvent stateExitEvent;
 
         [SerializeField] private float shakeAmplitude;
         [SerializeField] private float shakeFrequency;
@@ -94,10 +94,15 @@ namespace Arbelos.CameraUtility.Runtime
                         parentStateMachine.SetActiveState(this);
                         BeginDollyPath();
                         break;
-                    case CinemachineStateType.ClashZoom:
+                    case CinemachineStateType.StaticZoom:
                         EndCurrentState();
                         parentStateMachine.SetActiveState(this);
-                        BeginClashZoom();
+                        BeginStaticZoom();
+                        break;
+                    case CinemachineStateType.FollowZoom:
+                        EndCurrentState();
+                        parentStateMachine.SetActiveState(this);
+                        BeginFollowZoom();
                         break;
                     case CinemachineStateType.Shake:
                         BeginShake();
@@ -237,7 +242,7 @@ namespace Arbelos.CameraUtility.Runtime
         }
 
 
-        private void BeginClashZoom()
+        private void BeginStaticZoom()
         {
             if (focusObject == null)
             {
@@ -246,34 +251,57 @@ namespace Arbelos.CameraUtility.Runtime
             }
             targetCam.LookAt = focusObject;
             initialFOV = targetCam.m_Lens.FieldOfView;
-            StartCoroutine(StartClashZoom());
+            StartCoroutine(StartStaticZoom());
         }
 
-        IEnumerator InitializeZoomPosition()
+        private void BeginFollowZoom()
+        {
+            if (focusObject == null)
+            {
+                Debug.LogError("Focus object is not assigned for AutoPan state!");
+                return;
+            }
+            targetCam.LookAt = focusObject;
+            initialFOV = targetCam.m_Lens.FieldOfView;
+            StartCoroutine(StartFollowZoom());
+        }
+
+        IEnumerator InitializeZoomPosition(bool _followZoom)
         {
             Vector3 newPos = new Vector3(0, 0, 0);
-            switch (zoomInDirection)
+
+            if (!_followZoom)
             {
-                case ZoomDirection.North:
-                    newPos = new Vector3(0, targetCam.LookAt.transform.position.y, targetCam.LookAt.transform.position.z - zoomDistanceFromTarget);
-                    break;
-                case ZoomDirection.South:
-                    newPos = new Vector3(0, targetCam.LookAt.transform.position.y, targetCam.LookAt.transform.position.z + zoomDistanceFromTarget);
-                    break;
-                case ZoomDirection.East:
-                    newPos = new Vector3(targetCam.LookAt.transform.position.x + zoomDistanceFromTarget, targetCam.LookAt.transform.position.y, 0);
-                    break;
-                case ZoomDirection.West:
-                    newPos = new Vector3(targetCam.LookAt.transform.position.x - zoomDistanceFromTarget, targetCam.LookAt.transform.position.y, 0);
-                    break;
+                switch (zoomInDirection)
+                {
+                    case ZoomDirection.North:
+                        newPos = new Vector3(0, targetCam.LookAt.transform.position.y, targetCam.LookAt.transform.position.z - zoomDistanceFromTarget);
+                        break;
+                    case ZoomDirection.South:
+                        newPos = new Vector3(0, targetCam.LookAt.transform.position.y, targetCam.LookAt.transform.position.z + zoomDistanceFromTarget);
+                        break;
+                    case ZoomDirection.East:
+                        newPos = new Vector3(targetCam.LookAt.transform.position.x + zoomDistanceFromTarget, targetCam.LookAt.transform.position.y, 0);
+                        break;
+                    case ZoomDirection.West:
+                        newPos = new Vector3(targetCam.LookAt.transform.position.x - zoomDistanceFromTarget, targetCam.LookAt.transform.position.y, 0);
+                        break;
+                }
             }
+            else
+            {
+                // Get the position and rotation on the path
+                Vector3 worldPosition = path.EvaluatePositionAtUnit(0f, CinemachinePathBase.PositionUnits.Distance);
+                newPos = worldPosition;
+            }
+            
             // Smoothly move the camera from its current position to the start position
-            yield return StartCoroutine(SmoothMoveToFirstWaypoint(targetCam.transform, newPos, targetCam.LookAt));
+            yield return StartCoroutine(SmoothMoveToFirstWaypoint(targetCam.gameObject.transform, newPos, targetCam.LookAt));
         }
 
-        IEnumerator StartClashZoom()
+        IEnumerator StartStaticZoom()
         {
-            yield return StartCoroutine(InitializeZoomPosition());
+            yield return StartCoroutine(InitializeZoomPosition(false));
 
             float timeElapsed = 0f; // Track the time elapsed
 
@@ -304,6 +332,38 @@ namespace Arbelos.CameraUtility.Runtime
 
             //Stays in the zoom state for selected duration.
             yield return new WaitForSeconds(duration);
+
+            parentStateMachine.EndState();
+        }
+        
+        IEnumerator StartFollowZoom()
+        {
+            yield return StartCoroutine(InitializeZoomPosition(true));
+            
+            float newFOV = initialFOV;
+            
+            if (cameraSpeed <= 0f)
+                cameraSpeed = 1.0f;
+            
+            // While the time elapsed is less than the duration of the zoom effect
+            while (!Mathf.Approximately(newFOV, zoomTargetFOV))
+            {
+                // Move towards the target FOV at a rate controlled by cameraSpeed
+                newFOV = Mathf.Lerp(newFOV, zoomTargetFOV, Time.deltaTime * cameraSpeed); 
+                
+                // Apply the new FOV
+                targetCam.m_Lens.FieldOfView = newFOV;
+                
+                // Get the position and rotation on the path
+                Vector3 worldPosition = path.EvaluatePositionAtUnit(0f, CinemachinePathBase.PositionUnits.Distance);
+                targetCam.transform.position = worldPosition;
+                
+                // Wait for the next frame
+                yield return null;
+            }
+
+            // Ensure the final FOV is exactly the target FOV
+            targetCam.m_Lens.FieldOfView = zoomTargetFOV;
 
             parentStateMachine.EndState();
         }
@@ -408,7 +468,7 @@ namespace Arbelos.CameraUtility.Runtime
             {
                 case CinemachineStateType.DollyPath:
                     break;
-                case CinemachineStateType.ClashZoom:
+                case CinemachineStateType.StaticZoom:
                     EndClashZoomState();
                     break;
                 case CinemachineStateType.AutoPan:

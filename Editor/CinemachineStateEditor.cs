@@ -168,14 +168,21 @@ namespace Arbelos.CameraUtility.Editor
                     Debug.Log($"Current State Type is Dolly Path!");
                     break;
 
-                case (int)CinemachineStateType.ClashZoom:
+                case (int)CinemachineStateType.StaticZoom:
                     focusObjectField.visible = true;
                     zoomTargetFOVField.visible = true;
                     durationField.visible = true;
                     zoomInDirectionField.visible = true;
                     zoomDistanceFromTargetField.visible = true;
                     zoomCurveField.visible = true;
-                    Debug.Log($"Current State Type is Clash Zoom!");
+                    Debug.Log($"Current State Type is Static Zoom!");
+                    break;
+                
+                case (int)CinemachineStateType.FollowZoom:
+                    focusObjectField.visible = true;
+                    zoomTargetFOVField.visible = true;
+                    cameraSpeedField.visible = true;
+                    Debug.Log($"Current State Type is Follow Zoom!");
                     break;
 
                 case (int)CinemachineStateType.Shake:
@@ -197,4 +204,3 @@ namespace Arbelos.CameraUtility.Editor
         }
     }
 }
-
