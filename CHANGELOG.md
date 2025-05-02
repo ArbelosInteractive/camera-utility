@@ -36,3 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Get States method to fetch states under a statemachine.
 - Made state enter and exit events public.
 - Added a new statemachine type called "FollowZoom" which follows the first waypoint of the path on a moving transform while looking at the target.
+
+## [1.0.7] - 2025-05-02
+### Updated
+- Cinemachine State - End Current Active State's all coroutines before clearing it.
+- Cinemachine State - Fix Dollypath state to rotate towards lookat target if one assigned (missing if check).

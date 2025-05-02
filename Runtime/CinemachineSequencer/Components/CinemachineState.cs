@@ -117,12 +117,13 @@ namespace Arbelos.CameraUtility.Runtime
         }
 
         private void EndCurrentState()
-        {
-            if(parentStateMachine.GetActiveState() != null )
-            {
-                parentStateMachine.SwitchActiveState();
-            }
-        }
+		{
+    		if(parentStateMachine.GetActiveState() != null )
+    		{
+        		parentStateMachine.GetActiveState().StopAllCoroutines();
+        		parentStateMachine.SwitchActiveState();
+    		}
+		}
 
         private void BeginDollyPath()
         {
@@ -144,55 +145,63 @@ namespace Arbelos.CameraUtility.Runtime
             StartCoroutine(TravelDollyPath());
         }
 
-        IEnumerator TravelDollyPath()
-        {
-            // Calculate the first waypoint's position and rotation
-            Vector3 firstWaypointPosition = path.EvaluatePositionAtUnit(0f, CinemachinePathBase.PositionUnits.Distance);
-            Quaternion firstWaypointRotation = Quaternion.LookRotation(path.EvaluateTangentAtUnit(0f, CinemachinePathBase.PositionUnits.Distance));
+		IEnumerator TravelDollyPath()
+		{
+		    // Calculate the first waypoint's position and rotation
+		    Vector3 firstWaypointPosition = path.EvaluatePositionAtUnit(0f, CinemachinePathBase.PositionUnits.Distance);
+		    Quaternion firstWaypointRotation = Quaternion.LookRotation(path.EvaluateTangentAtUnit(0f, CinemachinePathBase.PositionUnits.Distance));
 
-            // Smoothly move the camera from its current position to the first waypoint
-            yield return StartCoroutine(SmoothMoveToFirstWaypoint(targetCam.transform, firstWaypointPosition, null, firstWaypointRotation));
+		    if (targetCam.LookAt != null)
+		    {
+		        // Smoothly move the camera from its current position to the first waypoint
+		        yield return StartCoroutine(SmoothMoveToFirstWaypoint(targetCam.transform, firstWaypointPosition, targetCam.LookAt, firstWaypointRotation));
+		    }
+		    else
+		    {
+		        // Smoothly move the camera from its current position to the first waypoint
+		        yield return StartCoroutine(SmoothMoveToFirstWaypoint(targetCam.transform, firstWaypointPosition, null, firstWaypointRotation));
+		    }
 
-            float pathPosition = 0f;
-            float pathLength = path.PathLength;
-            int currentCycle = 0;
-            float cycleDuration = pathLength / cameraSpeed;
+		    float pathPosition = 0f;
+		    float pathLength = path.PathLength;
+		    int currentCycle = 0;
+		    float cycleDuration = pathLength / cameraSpeed;
 
-            while (currentCycle < 1)
-            {
-                float elapsedTime = 0f;
-
-                while (elapsedTime < cycleDuration)
-                {
-                    elapsedTime += Time.deltaTime;
-                    pathPosition = (elapsedTime / cycleDuration) * pathLength;
-
-                    // Get the position on the path
-                    Vector3 worldPosition = path.EvaluatePositionAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance);
-                    targetCam.gameObject.transform.position = worldPosition;
-
-                    // Determine the camera's rotation based on whether the lookAt target is set
-                    if (targetCam.LookAt != null)
-                    {
-                        // Look at the lookAt target
-                        Vector3 directionToTarget = (targetCam.LookAt.position - targetCam.gameObject.transform.position).normalized;
-                        Quaternion lookAtRotation = Quaternion.LookRotation(directionToTarget);
-                        targetCam.gameObject.transform.rotation = lookAtRotation;
-                    }
-                    else
-                    {
-                        // Look in the direction of the path
-                        Quaternion worldRotation = Quaternion.LookRotation(path.EvaluateTangentAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance));
-                        targetCam.gameObject.transform.rotation = worldRotation;
-                    }
-
-                    yield return null;
-                }
-
-                currentCycle++;
-            }
-            parentStateMachine.EndState();
-        }
+		    while (currentCycle < 1)
+		    {
+		        float elapsedTime = 0f;
+		
+		        while (elapsedTime < cycleDuration)
+		        {
+		            elapsedTime += Time.deltaTime;
+		            pathPosition = (elapsedTime / cycleDuration) * pathLength;
+		
+		            // Get the position on the path
+		            Vector3 worldPosition = path.EvaluatePositionAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance);
+		            targetCam.gameObject.transform.position = worldPosition;
+		
+		            // Determine the camera's rotation based on whether the lookAt target is set
+		            if (targetCam.LookAt != null)
+		            {
+		                // Look at the lookAt target
+		                Vector3 directionToTarget = (targetCam.LookAt.position - targetCam.gameObject.transform.position).normalized;
+		                Quaternion lookAtRotation = Quaternion.LookRotation(directionToTarget);
+		                targetCam.gameObject.transform.rotation = lookAtRotation;
+		            }
+		            else
+		            {
+		                // Look in the direction of the path
+		                Quaternion worldRotation = Quaternion.LookRotation(path.EvaluateTangentAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance));
+		                targetCam.gameObject.transform.rotation = worldRotation;
+		            }
+		
+		            yield return null;
+		        }
+		
+		        currentCycle++;
+		    }
+		    parentStateMachine.EndState();
+		}
 
         IEnumerator SmoothMoveToFirstWaypoint(Transform target, Vector3 destinationPosition, Transform lookAtTarget = null, Quaternion? fixedRotation = null)
         {
