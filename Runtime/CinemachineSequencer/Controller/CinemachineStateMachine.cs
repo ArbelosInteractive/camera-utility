@@ -1,5 +1,5 @@
 using System;
-using Cinemachine;
+using Unity.Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +15,10 @@ namespace Arbelos.CameraUtility.Runtime
         private Camera originalCamera;
         [SerializeField][Tooltip("Original target cinemachine virtual camera game object.")] private GameObject originalVirtualCamera;
         private CinemachineState activeState;
-        
+
         void Awake()
         {
-            if(originalVirtualCamera && originalVirtualCamera.GetComponent<CinemachineVirtualCamera>())
+            if (originalVirtualCamera && originalVirtualCamera.GetComponent<CinemachineVirtualCamera>())
             {
                 StartCoroutine(SetOriginalCamera(originalVirtualCamera.GetComponent<CinemachineVirtualCamera>()));
             }
@@ -33,11 +33,11 @@ namespace Arbelos.CameraUtility.Runtime
 
         public CinemachineVirtualCamera GetBehaviourCamera()
         {
-            if(behaviourCamera != null)
+            if (behaviourCamera != null)
             {
                 return behaviourCamera;
             }
-            else if(originalVirtualCamera != null)
+            else if (originalVirtualCamera != null)
             {
                 return originalVirtualCamera.GetComponent<CinemachineVirtualCamera>();
             }
@@ -48,17 +48,17 @@ namespace Arbelos.CameraUtility.Runtime
         {
             originalVirtualCamera = virtualCamera.gameObject;
             var cameras = FindObjectsOfType<CinemachineBrain>(true);
-        
+
             //Wait until cameras are initialized property and a camera has a active virtual camera to search from.
             while (!Array.Exists(cameras,
-                       x => x.ActiveVirtualCamera != null && x.ActiveVirtualCamera.VirtualCameraGameObject != null))
+                       x => x.ActiveVirtualCamera != null && (x.ActiveVirtualCamera as CinemachineCamera).gameObject != null))
             {
                 yield return null;
             }
-            
+
             foreach (var camera in cameras)
             {
-                if (camera.ActiveVirtualCamera.VirtualCameraGameObject == originalVirtualCamera)
+                if ((camera.ActiveVirtualCamera as CinemachineCamera).gameObject == originalVirtualCamera)
                 {
                     originalCamera = camera.OutputCamera;
                     break;
@@ -68,7 +68,7 @@ namespace Arbelos.CameraUtility.Runtime
 
         private void AssignRefToChildStates()
         {
-            for (int i = 0; i < states.Count; i++) 
+            for (int i = 0; i < states.Count; i++)
             {
                 states[i].SetParentStateMachine(this);
             }
@@ -86,18 +86,18 @@ namespace Arbelos.CameraUtility.Runtime
             {
                 yield return null;
             }
-            
+
             var stateToBegin = states.Find(x => x.GetName() == _stateName);
-            if(stateToBegin)
+            if (stateToBegin)
             {
-                if(stateToBegin.GetStateType() == CinemachineStateType.Shake)
+                if (stateToBegin.GetStateType() == CinemachineStateType.Shake)
                 {
                     stateToBegin.BeginState();
                 }
                 else
                 {
                     //Only instantiate once if behavior camera is null.
-                    if(behaviourCamera == null)
+                    if (behaviourCamera == null)
                     {
                         //Instantiate a virtual camera
                         GameObject gameObjectToInstantiate = Instantiate(originalVirtualCamera, this.transform);
@@ -109,7 +109,7 @@ namespace Arbelos.CameraUtility.Runtime
                     }
                     stateToBegin.BeginState();
                 }
-                
+
                 Debug.Log($"[Cinemachine State Machine] Beginning State: {_stateName}");
             }
             else
@@ -120,21 +120,21 @@ namespace Arbelos.CameraUtility.Runtime
 
         public void EndState()
         {
-            if(activeState != null)
+            if (activeState != null)
             {
                 activeState.StopAllCoroutines();
                 activeState.EndState(true);
 
                 //For the scenario where a chained state has been staryed again and activate state has been assigned again.
-                if(activeState == null)
+                if (activeState == null)
                     StartCoroutine(RevertToOriginalState());
             }
-          
+
         }
 
         public void SwitchActiveState()
         {
-            if(activeState != null)
+            if (activeState != null)
             {
                 StopAllCoroutines();
                 activeState.StopAllCoroutines();
@@ -156,7 +156,7 @@ namespace Arbelos.CameraUtility.Runtime
             yield return new WaitForSeconds(0.1f);
 
             //Wait for switch blend to complete.
-            while(originalCamera.GetComponent<CinemachineBrain>().ActiveBlend != null)
+            while (originalCamera.GetComponent<CinemachineBrain>().ActiveBlend != null)
             {
                 yield return null;
             }

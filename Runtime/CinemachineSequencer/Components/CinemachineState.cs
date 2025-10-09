@@ -1,4 +1,4 @@
-using Cinemachine;
+using Unity.Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -81,7 +81,7 @@ namespace Arbelos.CameraUtility.Runtime
 
         public void BeginState()
         {
-            if(!stateActive)
+            if (!stateActive)
             {
                 stateActive = true;
                 targetCam = parentStateMachine.GetBehaviourCamera();
@@ -113,17 +113,17 @@ namespace Arbelos.CameraUtility.Runtime
                         BeginAutoPan();
                         break;
                 }
-            }  
+            }
         }
 
         private void EndCurrentState()
-		{
-    		if(parentStateMachine.GetActiveState() != null )
-    		{
-        		parentStateMachine.GetActiveState().StopAllCoroutines();
-        		parentStateMachine.SwitchActiveState();
-    		}
-		}
+        {
+            if (parentStateMachine.GetActiveState() != null)
+            {
+                parentStateMachine.GetActiveState().StopAllCoroutines();
+                parentStateMachine.SwitchActiveState();
+            }
+        }
 
         private void BeginDollyPath()
         {
@@ -132,7 +132,7 @@ namespace Arbelos.CameraUtility.Runtime
                 Debug.LogError("The path atleast need to have 2 waypoints to travel for DollyPath state!");
                 return;
             }
-            
+
             if (focusObject != null)
             {
                 targetCam.LookAt = focusObject;
@@ -145,63 +145,63 @@ namespace Arbelos.CameraUtility.Runtime
             StartCoroutine(TravelDollyPath());
         }
 
-		IEnumerator TravelDollyPath()
-		{
-		    // Calculate the first waypoint's position and rotation
-		    Vector3 firstWaypointPosition = path.EvaluatePositionAtUnit(0f, CinemachinePathBase.PositionUnits.Distance);
-		    Quaternion firstWaypointRotation = Quaternion.LookRotation(path.EvaluateTangentAtUnit(0f, CinemachinePathBase.PositionUnits.Distance));
+        IEnumerator TravelDollyPath()
+        {
+            // Calculate the first waypoint's position and rotation
+            Vector3 firstWaypointPosition = path.EvaluatePositionAtUnit(0f, CinemachinePathBase.PositionUnits.Distance);
+            Quaternion firstWaypointRotation = Quaternion.LookRotation(path.EvaluateTangentAtUnit(0f, CinemachinePathBase.PositionUnits.Distance));
 
-		    if (targetCam.LookAt != null)
-		    {
-		        // Smoothly move the camera from its current position to the first waypoint
-		        yield return StartCoroutine(SmoothMoveToFirstWaypoint(targetCam.transform, firstWaypointPosition, targetCam.LookAt, firstWaypointRotation));
-		    }
-		    else
-		    {
-		        // Smoothly move the camera from its current position to the first waypoint
-		        yield return StartCoroutine(SmoothMoveToFirstWaypoint(targetCam.transform, firstWaypointPosition, null, firstWaypointRotation));
-		    }
+            if (targetCam.LookAt != null)
+            {
+                // Smoothly move the camera from its current position to the first waypoint
+                yield return StartCoroutine(SmoothMoveToFirstWaypoint(targetCam.transform, firstWaypointPosition, targetCam.LookAt, firstWaypointRotation));
+            }
+            else
+            {
+                // Smoothly move the camera from its current position to the first waypoint
+                yield return StartCoroutine(SmoothMoveToFirstWaypoint(targetCam.transform, firstWaypointPosition, null, firstWaypointRotation));
+            }
 
-		    float pathPosition = 0f;
-		    float pathLength = path.PathLength;
-		    int currentCycle = 0;
-		    float cycleDuration = pathLength / cameraSpeed;
+            float pathPosition = 0f;
+            float pathLength = path.PathLength;
+            int currentCycle = 0;
+            float cycleDuration = pathLength / cameraSpeed;
 
-		    while (currentCycle < 1)
-		    {
-		        float elapsedTime = 0f;
-		
-		        while (elapsedTime < cycleDuration)
-		        {
-		            elapsedTime += Time.deltaTime;
-		            pathPosition = (elapsedTime / cycleDuration) * pathLength;
-		
-		            // Get the position on the path
-		            Vector3 worldPosition = path.EvaluatePositionAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance);
-		            targetCam.gameObject.transform.position = worldPosition;
-		
-		            // Determine the camera's rotation based on whether the lookAt target is set
-		            if (targetCam.LookAt != null)
-		            {
-		                // Look at the lookAt target
-		                Vector3 directionToTarget = (targetCam.LookAt.position - targetCam.gameObject.transform.position).normalized;
-		                Quaternion lookAtRotation = Quaternion.LookRotation(directionToTarget);
-		                targetCam.gameObject.transform.rotation = lookAtRotation;
-		            }
-		            else
-		            {
-		                // Look in the direction of the path
-		                Quaternion worldRotation = Quaternion.LookRotation(path.EvaluateTangentAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance));
-		                targetCam.gameObject.transform.rotation = worldRotation;
-		            }
-		
-		            yield return null;
-		        }
-		
-		        currentCycle++;
-		    }
-		    parentStateMachine.EndState();
-		}
+            while (currentCycle < 1)
+            {
+                float elapsedTime = 0f;
+
+                while (elapsedTime < cycleDuration)
+                {
+                    elapsedTime += Time.deltaTime;
+                    pathPosition = (elapsedTime / cycleDuration) * pathLength;
+
+                    // Get the position on the path
+                    Vector3 worldPosition = path.EvaluatePositionAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance);
+                    targetCam.gameObject.transform.position = worldPosition;
+
+                    // Determine the camera's rotation based on whether the lookAt target is set
+                    if (targetCam.LookAt != null)
+                    {
+                        // Look at the lookAt target
+                        Vector3 directionToTarget = (targetCam.LookAt.position - targetCam.gameObject.transform.position).normalized;
+                        Quaternion lookAtRotation = Quaternion.LookRotation(directionToTarget);
+                        targetCam.gameObject.transform.rotation = lookAtRotation;
+                    }
+                    else
+                    {
+                        // Look in the direction of the path
+                        Quaternion worldRotation = Quaternion.LookRotation(path.EvaluateTangentAtUnit(pathPosition, CinemachinePathBase.PositionUnits.Distance));
+                        targetCam.gameObject.transform.rotation = worldRotation;
+                    }
+
+                    yield return null;
+                }
+
+                currentCycle++;
+            }
+            parentStateMachine.EndState();
+        }
 
         IEnumerator SmoothMoveToFirstWaypoint(Transform target, Vector3 destinationPosition, Transform lookAtTarget = null, Quaternion? fixedRotation = null)
         {
@@ -303,7 +303,7 @@ namespace Arbelos.CameraUtility.Runtime
                 Vector3 worldPosition = path.EvaluatePositionAtUnit(0f, CinemachinePathBase.PositionUnits.Distance);
                 newPos = worldPosition;
             }
-            
+
             // Smoothly move the camera from its current position to the start position
             yield return StartCoroutine(SmoothMoveToFirstWaypoint(targetCam.gameObject.transform, newPos, targetCam.LookAt));
         }
@@ -344,29 +344,29 @@ namespace Arbelos.CameraUtility.Runtime
 
             parentStateMachine.EndState();
         }
-        
+
         IEnumerator StartFollowZoom()
         {
             yield return StartCoroutine(InitializeZoomPosition(true));
-            
+
             float newFOV = initialFOV;
-            
+
             if (cameraSpeed <= 0f)
                 cameraSpeed = 1.0f;
-            
+
             // While the time elapsed is less than the duration of the zoom effect
             while (!Mathf.Approximately(newFOV, zoomTargetFOV))
             {
                 // Move towards the target FOV at a rate controlled by cameraSpeed
-                newFOV = Mathf.Lerp(newFOV, zoomTargetFOV, Time.deltaTime * cameraSpeed); 
-                
+                newFOV = Mathf.Lerp(newFOV, zoomTargetFOV, Time.deltaTime * cameraSpeed);
+
                 // Apply the new FOV
                 targetCam.m_Lens.FieldOfView = newFOV;
-                
+
                 // Get the position and rotation on the path
                 Vector3 worldPosition = path.EvaluatePositionAtUnit(0f, CinemachinePathBase.PositionUnits.Distance);
                 targetCam.transform.position = worldPosition;
-                
+
                 // Wait for the next frame
                 yield return null;
             }
@@ -379,14 +379,14 @@ namespace Arbelos.CameraUtility.Runtime
 
         private void BeginShake()
         {
-            if(targetCam != null)
+            if (targetCam != null)
             {
                 var channel = targetCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
                 if (channel != null)
                 {
-                    channel.m_AmplitudeGain = shakeAmplitude;
-                    channel.m_NoiseProfile = shakeSettings;
-                    channel.m_FrequencyGain = shakeFrequency;
+                    channel.AmplitudeGain = shakeAmplitude;
+                    channel.NoiseProfile = shakeSettings;
+                    channel.FrequencyGain = shakeFrequency;
                     StartCoroutine(BeginShaking());
                 }
                 else
@@ -399,7 +399,7 @@ namespace Arbelos.CameraUtility.Runtime
         IEnumerator BeginShaking()
         {
             float startTime = Time.time;
-            while(Time.time - startTime < duration)
+            while (Time.time - startTime < duration)
             {
                 yield return null;
             }
@@ -409,12 +409,12 @@ namespace Arbelos.CameraUtility.Runtime
 
         private void BeginAutoPan()
         {
-            if(!path.Looped)
+            if (!path.Looped)
             {
                 Debug.LogError("AutoPan state can only be used with looped paths!");
                 return;
             }
-            if(focusObject == null)
+            if (focusObject == null)
             {
                 Debug.LogError("Focus object is not assigned for AutoPan state!");
                 return;
@@ -473,7 +473,7 @@ namespace Arbelos.CameraUtility.Runtime
 
         public void EndState(bool executeExitEvent)
         {
-            switch(type)
+            switch (type)
             {
                 case CinemachineStateType.DollyPath:
                     break;
@@ -484,7 +484,7 @@ namespace Arbelos.CameraUtility.Runtime
                     break;
             }
             stateActive = false;
-            if(executeExitEvent)
+            if (executeExitEvent)
             {
                 parentStateMachine.SetActiveState(null);
                 stateExitEvent?.Invoke();
@@ -503,9 +503,9 @@ namespace Arbelos.CameraUtility.Runtime
                 var channel = targetCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
                 if (channel != null)
                 {
-                    channel.m_AmplitudeGain = 0.0f;
-                    channel.m_FrequencyGain = 0.0f;
-                    channel.m_NoiseProfile = null;
+                    channel.AmplitudeGain = 0.0f;
+                    channel.FrequencyGain = 0.0f;
+                    channel.NoiseProfile = null;
                 }
                 else
                 {
