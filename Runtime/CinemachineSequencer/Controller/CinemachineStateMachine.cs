@@ -1,15 +1,14 @@
 using System;
-using Cinemachine;
+using Unity.Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Arbelos.CameraUtility.Runtime
 {
     public class CinemachineStateMachine : MonoBehaviour
     {
-        private CinemachineVirtualCamera behaviourCamera;
+        private CinemachineCamera behaviourCamera;
         [SerializeField][Tooltip("Assign the list of cinemachine states you want to add to this state machine")] private List<CinemachineState> states = new List<CinemachineState>();
         [SerializeField][Tooltip("Time taken to smoothly switch from one state to another")] private float switchStateDuration = 0.5f;
         private Camera originalCamera;
@@ -18,9 +17,9 @@ namespace Arbelos.CameraUtility.Runtime
         
         void Awake()
         {
-            if(originalVirtualCamera && originalVirtualCamera.GetComponent<CinemachineVirtualCamera>())
+            if(originalVirtualCamera && originalVirtualCamera.GetComponent<CinemachineCamera>())
             {
-                StartCoroutine(SetOriginalCamera(originalVirtualCamera.GetComponent<CinemachineVirtualCamera>()));
+                StartCoroutine(SetOriginalCamera(originalVirtualCamera.GetComponent<CinemachineCamera>()));
             }
             AssignRefToChildStates();
         }
@@ -31,7 +30,7 @@ namespace Arbelos.CameraUtility.Runtime
 
         }
 
-        public CinemachineVirtualCamera GetBehaviourCamera()
+        public CinemachineCamera GetBehaviourCamera()
         {
             if(behaviourCamera != null)
             {
@@ -39,26 +38,26 @@ namespace Arbelos.CameraUtility.Runtime
             }
             else if(originalVirtualCamera != null)
             {
-                return originalVirtualCamera.GetComponent<CinemachineVirtualCamera>();
+                return originalVirtualCamera.GetComponent<CinemachineCamera>();
             }
             return null;
         }
 
-        public IEnumerator SetOriginalCamera(CinemachineVirtualCamera virtualCamera)
+        public IEnumerator SetOriginalCamera(CinemachineCamera virtualCamera)
         {
             originalVirtualCamera = virtualCamera.gameObject;
             var cameras = FindObjectsOfType<CinemachineBrain>(true);
         
             //Wait until cameras are initialized property and a camera has a active virtual camera to search from.
             while (!Array.Exists(cameras,
-                       x => x.ActiveVirtualCamera != null && x.ActiveVirtualCamera.VirtualCameraGameObject != null))
+                       x => x.ActiveVirtualCamera != null && x.ActiveVirtualCamera.IsValid))
             {
                 yield return null;
             }
             
             foreach (var camera in cameras)
             {
-                if (camera.ActiveVirtualCamera.VirtualCameraGameObject == originalVirtualCamera)
+                if ((CinemachineCamera)camera.ActiveVirtualCamera == originalVirtualCamera.GetComponent<CinemachineCamera>())
                 {
                     originalCamera = camera.OutputCamera;
                     break;
@@ -101,11 +100,11 @@ namespace Arbelos.CameraUtility.Runtime
                     {
                         //Instantiate a virtual camera
                         GameObject gameObjectToInstantiate = Instantiate(originalVirtualCamera, this.transform);
-                        behaviourCamera = gameObjectToInstantiate.GetComponent<CinemachineVirtualCamera>();
+                        behaviourCamera = gameObjectToInstantiate.GetComponent<CinemachineCamera>();
                         gameObjectToInstantiate.transform.position = originalVirtualCamera.transform.position;
                         gameObjectToInstantiate.transform.rotation = originalVirtualCamera.transform.rotation;
                         gameObjectToInstantiate.transform.localScale = originalVirtualCamera.transform.localScale;
-                        behaviourCamera.Priority = originalVirtualCamera.GetComponent<CinemachineVirtualCamera>().Priority + 1;
+                        behaviourCamera.Priority.Value = originalVirtualCamera.GetComponent<CinemachineCamera>().Priority.Value + 1;
                     }
                     stateToBegin.BeginState();
                 }
@@ -150,7 +149,7 @@ namespace Arbelos.CameraUtility.Runtime
         IEnumerator RevertToOriginalState()
         {
             //Reset the priority back to original
-            behaviourCamera.Priority = originalVirtualCamera.GetComponent<CinemachineVirtualCamera>().Priority - 1;
+            behaviourCamera.Priority.Value = originalVirtualCamera.GetComponent<CinemachineCamera>().Priority.Value - 1;
 
             //Wait for late update blend to start before checking if it is complete.
             yield return new WaitForSeconds(0.1f);

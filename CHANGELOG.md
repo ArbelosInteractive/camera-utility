@@ -41,3 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Updated
 - Cinemachine State - End Current Active State's all coroutines before clearing it.
 - Cinemachine State - Fix Dollypath state to rotate towards lookat target if one assigned (missing if check).
+
+## [1.0.8] - 2025-10-09
+### Updated
+- Updates to accomodate Cinemachine 3.0

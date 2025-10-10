@@ -1,6 +1,5 @@
-using Cinemachine;
+using Unity.Cinemachine;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -29,7 +28,7 @@ namespace Arbelos.CameraUtility.Runtime
         [SerializeField] private AnimationCurve zoomCurve;
 
         private CinemachineStateMachine parentStateMachine;
-        private CinemachineVirtualCamera targetCam;
+        private CinemachineCamera targetCam;
         private CinemachineSmoothPath path;
         private bool stateActive;
         private float initialFOV;
@@ -259,7 +258,7 @@ namespace Arbelos.CameraUtility.Runtime
                 return;
             }
             targetCam.LookAt = focusObject;
-            initialFOV = targetCam.m_Lens.FieldOfView;
+            initialFOV = targetCam.Lens.FieldOfView;
             StartCoroutine(StartStaticZoom());
         }
 
@@ -271,7 +270,7 @@ namespace Arbelos.CameraUtility.Runtime
                 return;
             }
             targetCam.LookAt = focusObject;
-            initialFOV = targetCam.m_Lens.FieldOfView;
+            initialFOV = targetCam.Lens.FieldOfView;
             StartCoroutine(StartFollowZoom());
         }
 
@@ -327,7 +326,7 @@ namespace Arbelos.CameraUtility.Runtime
                 float newFOV = Mathf.Lerp(initialFOV, zoomTargetFOV, curveValue);
 
                 // Apply the new FOV
-                targetCam.m_Lens.FieldOfView = newFOV;
+                targetCam.Lens.FieldOfView = newFOV;
 
                 // Wait for the next frame
                 yield return null;
@@ -337,7 +336,7 @@ namespace Arbelos.CameraUtility.Runtime
             }
 
             // Ensure the final FOV is exactly the target FOV
-            targetCam.m_Lens.FieldOfView = zoomTargetFOV;
+            targetCam.Lens.FieldOfView = zoomTargetFOV;
 
             //Stays in the zoom state for selected duration.
             yield return new WaitForSeconds(duration);
@@ -361,7 +360,7 @@ namespace Arbelos.CameraUtility.Runtime
                 newFOV = Mathf.Lerp(newFOV, zoomTargetFOV, Time.deltaTime * cameraSpeed); 
                 
                 // Apply the new FOV
-                targetCam.m_Lens.FieldOfView = newFOV;
+                targetCam.Lens.FieldOfView = newFOV;
                 
                 // Get the position and rotation on the path
                 Vector3 worldPosition = path.EvaluatePositionAtUnit(0f, CinemachinePathBase.PositionUnits.Distance);
@@ -372,7 +371,7 @@ namespace Arbelos.CameraUtility.Runtime
             }
 
             // Ensure the final FOV is exactly the target FOV
-            targetCam.m_Lens.FieldOfView = zoomTargetFOV;
+            targetCam.Lens.FieldOfView = zoomTargetFOV;
 
             parentStateMachine.EndState();
         }
@@ -381,12 +380,12 @@ namespace Arbelos.CameraUtility.Runtime
         {
             if(targetCam != null)
             {
-                var channel = targetCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
-                if (channel != null)
+                var noise = targetCam.GetCinemachineComponent(CinemachineCore.Stage.Noise) as CinemachineBasicMultiChannelPerlin;
+                if (noise != null)
                 {
-                    channel.m_AmplitudeGain = shakeAmplitude;
-                    channel.m_NoiseProfile = shakeSettings;
-                    channel.m_FrequencyGain = shakeFrequency;
+                    noise.AmplitudeGain = shakeAmplitude;
+                    noise.NoiseProfile = shakeSettings;
+                    noise.FrequencyGain = shakeFrequency;
                     StartCoroutine(BeginShaking());
                 }
                 else
@@ -493,19 +492,19 @@ namespace Arbelos.CameraUtility.Runtime
 
         private void EndClashZoomState()
         {
-            targetCam.m_Lens.FieldOfView = initialFOV;
+            targetCam.Lens.FieldOfView = initialFOV;
         }
 
         private void EndShake()
         {
             if (targetCam != null)
             {
-                var channel = targetCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
-                if (channel != null)
+                var noise = targetCam.GetCinemachineComponent(CinemachineCore.Stage.Noise) as CinemachineBasicMultiChannelPerlin;
+                if (noise != null)
                 {
-                    channel.m_AmplitudeGain = 0.0f;
-                    channel.m_FrequencyGain = 0.0f;
-                    channel.m_NoiseProfile = null;
+                    noise.AmplitudeGain = 0.0f;
+                    noise.NoiseProfile = null;
+                    noise.FrequencyGain = 0.0f;
                 }
                 else
                 {
@@ -516,4 +515,3 @@ namespace Arbelos.CameraUtility.Runtime
         }
     }
 }
-
