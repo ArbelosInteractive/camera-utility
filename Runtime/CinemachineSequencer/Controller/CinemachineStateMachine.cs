@@ -11,7 +11,7 @@ namespace Arbelos.CameraUtility.Runtime
         private CinemachineCamera behaviourCamera;
         [SerializeField][Tooltip("Assign the list of cinemachine states you want to add to this state machine")] private List<CinemachineState> states = new List<CinemachineState>();
         [SerializeField][Tooltip("Time taken to smoothly switch from one state to another")] private float switchStateDuration = 0.5f;
-        private Camera originalCamera;
+        public Camera originalCamera;
         [SerializeField][Tooltip("Original target cinemachine virtual camera game object.")] private GameObject originalVirtualCamera;
         private CinemachineState activeState;
         
@@ -41,6 +41,11 @@ namespace Arbelos.CameraUtility.Runtime
                 return originalVirtualCamera.GetComponent<CinemachineCamera>();
             }
             return null;
+        }
+
+        public void SetOriginalCamera(Camera camera)
+        {
+            originalCamera = camera;
         }
 
         public IEnumerator SetOriginalCamera(CinemachineCamera virtualCamera)
